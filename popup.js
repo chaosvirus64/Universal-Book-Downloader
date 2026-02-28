@@ -1,3 +1,6 @@
+// Popup UI Logic: Handling multi-platform site detection
+// Enabled EPUB for Biblioclub
+
 let isDataLoaded = false;
 let totalPages;
 let ongoingDownloadState = null;
