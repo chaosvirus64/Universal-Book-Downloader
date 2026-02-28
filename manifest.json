@@ -6,12 +6,14 @@
   "permissions": [
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "power"
   ],
   "host_permissions": [
     "https://znanium.ru/*",
     "https://*.znanium.ru/*",
     "https://lanbook.com/*",
+    "https://*.lanbook.com/*",
     "https://urait.ru/*",
     "https://biblioclub.ru/*"
   ],
@@ -29,31 +31,35 @@
   "content_scripts": [
     {
       "matches": [
-        "https://znanium.ru/read?id=*",
-        "https://znanium.ru/reader/read?id=*",
-        "https://lanbook.com/reader/book/*",
-        "https://urait.ru/viewer/*",
-        "https://biblioclub.ru/index.php?page=book_view&book_id=*",
-        "https://biblioclub.ru/index.php?page=book_red&book_id=*"
+        "*://*.znanium.ru/*",
+        "*://znanium.ru/*",
+        "*://*.lanbook.com/*",
+        "*://lanbook.com/*",
+        "*://*.urait.ru/*",
+        "*://urait.ru/*",
+        "*://*.biblioclub.ru/*",
+        "*://biblioclub.ru/*"
       ],
       "js": [
         "libs/pdfkit.standalone.js",
         "libs/blob-stream.min.js",
         "libs/SVG-to-PDFKit.js",
         "libs/jszip.min.js",
-        "inject.js"
+        "preload.js"
       ],
       "run_at": "document_start",
       "all_frames": true
     },
     {
       "matches": [
-        "https://znanium.ru/read?id=*",
-        "https://znanium.ru/reader/read?id=*",
-        "https://lanbook.com/reader/book/*",
-        "https://urait.ru/viewer/*",
-        "https://biblioclub.ru/index.php?page=book_view&book_id=*",
-        "https://biblioclub.ru/index.php?page=book_red&book_id=*"
+        "*://*.znanium.ru/*",
+        "*://znanium.ru/*",
+        "*://*.lanbook.com/*",
+        "*://lanbook.com/*",
+        "*://*.urait.ru/*",
+        "*://urait.ru/*",
+        "*://*.biblioclub.ru/*",
+        "*://biblioclub.ru/*"
       ],
       "js": [
         "content.js"
@@ -72,12 +78,17 @@
         "worker.js",
         "libs/*.js",
         "decryptSVG.wasm",
-        "preload.js"
+        "preload.js",
+        "inject.js"
       ],
       "matches": [
+        "*://*.znanium.ru/*",
         "*://znanium.ru/*",
+        "*://*.lanbook.com/*",
         "*://lanbook.com/*",
+        "*://*.urait.ru/*",
         "*://urait.ru/*",
+        "*://*.biblioclub.ru/*",
         "*://biblioclub.ru/*"
       ]
     }

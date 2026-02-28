@@ -19,10 +19,6 @@ let isFormatLocked = false;
 
 startButton.disabled = true;
 
-const CHECK_INTERVAL = 60 * 60 * 1000;
-const GITHUB_API_URL = 'https://api.github.com/repos/chaosvirus64/Universal-Book-Downloader/releases/latest';
-const RELEASE_URL = 'https://github.com/chaosvirus64/Universal-Book-Downloader/releases/latest';
-
 function parseProgressFromBadge(badgeText, fallback = 0) {
     if (typeof badgeText !== 'string') {
         return fallback;
@@ -248,10 +244,10 @@ window.onload = async function () {
         url = new URL("http://unknown");
     }
     const isValidSite =
-        (url.hostname === 'znanium.ru' && url.pathname === '/read' && url.searchParams.has('id')) ||
-        (url.hostname.includes('lanbook.com') && url.pathname.startsWith('/book/')) ||
+        (url.hostname.includes('znanium.ru') && (url.pathname.includes('/read') || url.pathname.includes('/reader/read')) && url.searchParams.has('id')) ||
+        (url.hostname.includes('lanbook.com') && (url.pathname.startsWith('/book/') || url.pathname.startsWith('/reader/book/'))) ||
         (url.hostname.includes('urait.ru') && (url.pathname.includes('/viewer/') || url.pathname.includes('/course-viewer/'))) ||
-        (url.hostname.includes('biblioclub.ru') && url.pathname === '/index.php' && (url.searchParams.get('page') || '').startsWith('book_view'));
+        (url.hostname.includes('biblioclub.ru') && url.pathname.includes('/index.php') && (url.searchParams.get('page') || '').startsWith('book_view'));
 
     if (!tab || !isValidSite) {
         document.body.innerHTML = `
@@ -357,8 +353,8 @@ function isZnaniumReader(url) {
     try {
         const u = new URL(url);
         return (
-            u.hostname === 'znanium.ru' &&
-            u.pathname === '/read' &&
+            u.hostname.includes('znanium.ru') &&
+            (u.pathname.includes('/read') || u.pathname.includes('/reader/read')) &&
             u.searchParams.has('id')
         );
     } catch {
@@ -484,109 +480,3 @@ themeSwitch.addEventListener('change', () => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    const updateWrapper = document.querySelector('.update-indicator-wrapper');
-    const updateIndicator = updateWrapper?.querySelector('#update-indicator');
-    if (!updateIndicator) return;
-
-    const attachClick = () => {
-        if (updateIndicator.dataset.clickBound) return;
-        updateIndicator.dataset.clickBound = '1';
-
-        updateIndicator.addEventListener('click', () => {
-            if (chrome?.tabs) {
-                chrome.tabs.create({ url: RELEASE_URL });
-            } else {
-                window.open(RELEASE_URL, '_blank');
-            }
-        });
-    };
-
-    const renderIndicator = (hasUpdate) => {
-        if (hasUpdate) {
-            updateWrapper.classList.add('visible');
-            updateIndicator.title = 'Доступна новая версия расширения, нажмите чтобы перейти';
-            attachClick();
-        } else {
-            updateWrapper.classList.remove('visible');
-        }
-    };
-
-    (async () => {
-        const manifest = chrome.runtime.getManifest();
-        const currentVersion = manifest.version;
-
-        chrome.storage.local.get(
-            ['lastUpdateCheck', 'hasUpdate', 'manifestVersion'],
-            async (data) => {
-                const now = Date.now();
-                const lastCheck = data.lastUpdateCheck || 0;
-                const cachedHasUpdate = typeof data.hasUpdate === 'boolean' ? data.hasUpdate : null;
-                const storedVersion = data.manifestVersion;
-
-                const versionChanged = storedVersion && storedVersion !== currentVersion;
-
-                chrome.storage.local.set({ manifestVersion: currentVersion });
-
-                if (versionChanged) {
-                    try {
-                        const hasUpdate = await checkForUpdate();
-                        chrome.storage.local.set({
-                            lastUpdateCheck: Date.now(),
-                            hasUpdate
-                        });
-                        renderIndicator(hasUpdate);
-                    } catch (e) {
-                        console.error('Ошибка при проверке обновлений после смены версии:', e);
-                        renderIndicator(false);
-                    }
-                    return;
-                }
-
-                if (cachedHasUpdate !== null && (now - lastCheck) < CHECK_INTERVAL) {
-                    renderIndicator(cachedHasUpdate);
-                    return;
-                }
-
-                try {
-                    const hasUpdate = await checkForUpdate();
-                    chrome.storage.local.set({
-                        lastUpdateCheck: Date.now(),
-                        hasUpdate
-                    });
-                    renderIndicator(hasUpdate);
-                } catch (e) {
-                    console.error('Ошибка при проверке обновлений:', e);
-                    renderIndicator(false);
-                }
-            }
-        );
-    })();
-});
-
-async function checkForUpdate() {
-    const manifest = chrome.runtime.getManifest();
-    const currentVersion = manifest.version;
-
-    const response = await fetch(GITHUB_API_URL);
-    if (!response.ok) throw new Error('GitHub API error: ' + response.status);
-
-    const data = await response.json();
-    const latestVersion = (data.tag_name || '').slice(1).trim();
-
-    return isNewerVersion(latestVersion, currentVersion);
-}
-
-function isNewerVersion(latest, current) {
-    const latestParts = latest.split('.').map(Number);
-    const currentParts = current.split('.').map(Number);
-    const len = Math.max(latestParts.length, currentParts.length);
-
-    for (let i = 0; i < len; i++) {
-        const l = latestParts[i] || 0;
-        const c = currentParts[i] || 0;
-        if (l > c) return true;
-        if (l < c) return false;
-    }
-    return false;
-}
