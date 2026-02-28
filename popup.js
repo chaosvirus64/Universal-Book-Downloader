@@ -20,8 +20,8 @@ let isFormatLocked = false;
 startButton.disabled = true;
 
 const CHECK_INTERVAL = 60 * 60 * 1000;
-const GITHUB_API_URL = 'https://api.github.com/repos/SteeaaN/ZnaniumDownloader/releases/latest';
-const RELEASE_URL = 'https://github.com/SteeaaN/ZnaniumDownloader/releases/latest';
+const GITHUB_API_URL = 'https://api.github.com/repos/chaosvirus64/Universal-Book-Downloader/releases/latest';
+const RELEASE_URL = 'https://github.com/chaosvirus64/Universal-Book-Downloader/releases/latest';
 
 function parseProgressFromBadge(badgeText, fallback = 0) {
     if (typeof badgeText !== 'string') {
@@ -565,7 +565,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function checkForUpdate() {
-    console.log('123')
     const manifest = chrome.runtime.getManifest();
     const currentVersion = manifest.version;
 

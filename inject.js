@@ -1,5 +1,4 @@
 (function () {
-    console.log('injected');
     window.addEventListener("message", (event) => {
         if (event.source !== window || event.data.action !== "getPage") return;
         try {
@@ -10,11 +9,11 @@
             } else {
                 url = `https://znanium.ru/read/page?doc=${event.data.bookId}&page=${event.data.pageNumber}&current=1&d=&t=svg`;
             }
-            const b = function(response) {
+            const b = function (response) {
                 const xmlString = new XMLSerializer().serializeToString(response);
                 window.postMessage({ action: "pageResponse", page: xmlString }, "*");
             };
-            const k = function(jqXHR, textStatus, errorThrown) {
+            const k = function (jqXHR, textStatus, errorThrown) {
                 window.postMessage({ action: "pageError", error: `Ошибка загрузки страницы ${event.data.pageNumber}: ${textStatus} - ${errorThrown}` }, "*");
             };
             $.ajax({
