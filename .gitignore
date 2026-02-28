@@ -1,0 +1,17 @@
+# Windows thumbnails
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Chrome Extension temporary
+*.crx
+*.pem
+
+# DS_Store (Mac)
+.DS_Store

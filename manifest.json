@@ -1,0 +1,81 @@
+{
+  "manifest_version": 3,
+  "name": "Universal Book Downloader",
+  "version": "1.4.0",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "power"
+  ],
+  "host_permissions": [
+    "https://znanium.ru/*",
+    "https://*.lanbook.com/*",
+    "https://*.urait.ru/*",
+    "https://urait.ru/*",
+    "https://api.github.com/",
+    "*://biblioclub.ru/*",
+    "*://*.biblioclub.ru/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Universal Book Downloader"
+  },
+  "description": "Загрузка книг с Лань, Юрайт и Znanium в PDF",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://znanium.ru/read?id=*",
+        "*://reader.lanbook.com/book/*",
+        "*://e.lanbook.com/book/*",
+        "*://*.urait.ru/viewer/*",
+        "*://urait.ru/viewer/*",
+        "*://*.urait.ru/course-viewer/*",
+        "*://urait.ru/course-viewer/*",
+        "*://biblioclub.ru/index.php?page=book_view*",
+        "*://*.biblioclub.ru/index.php?page=book_view*"
+      ],
+      "js": [
+        "preload.js",
+        "content.js",
+        "libs/pdfkit.standalone.js",
+        "libs/blob-stream.min.js",
+        "libs/SVG-to-PDFKit.js",
+        "libs/jszip.min.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "inject.js",
+        "worker.js",
+        "libs/pdfkit.standalone.js",
+        "libs/blob-stream.min.js",
+        "libs/SVG-to-PDFKit.js",
+        "decryptSVG.wasm",
+        "libs/jszip.min.js"
+      ],
+      "matches": [
+        "*://znanium.ru/*",
+        "*://*.lanbook.com/*",
+        "*://*.urait.ru/*",
+        "*://urait.ru/*",
+        "*://biblioclub.ru/*",
+        "*://*.biblioclub.ru/*"
+      ]
+    }
+  ]
+}
