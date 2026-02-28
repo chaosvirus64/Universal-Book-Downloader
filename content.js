@@ -1,4 +1,7 @@
-﻿async function createWorker() {
+﻿// Universal Book Downloader - Enhanced version with Biblioclub support
+// Mod by chaosvirus64 | Based on ZnaniumDownloader by SteeaaN
+
+async function createWorker() {
     const workerUrl = chrome.runtime.getURL("worker.js");
     const response = await fetch(workerUrl);
     let code = await response.text();
