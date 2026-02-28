@@ -1,34 +1,27 @@
 {
   "manifest_version": 3,
   "name": "Universal Book Downloader",
-  "version": "1.4.0",
+  "version": "1.4.1",
+  "description": "Универсальное расширение для скачивания учебных материалов со Znanium, Biblioclub, Urait и Lanbook.",
   "permissions": [
     "storage",
     "activeTab",
-    "scripting",
-    "power"
+    "scripting"
   ],
   "host_permissions": [
     "https://znanium.ru/*",
-    "https://*.lanbook.com/*",
-    "https://*.urait.ru/*",
+    "https://*.znanium.ru/*",
+    "https://lanbook.com/*",
     "https://urait.ru/*",
-    "https://api.github.com/",
-    "*://biblioclub.ru/*",
-    "*://*.biblioclub.ru/*"
+    "https://biblioclub.ru/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Universal Book Downloader"
-  },
-  "description": "Загрузка книг с Лань, Юрайт и Znanium в PDF",
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
-  },
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
@@ -36,45 +29,56 @@
   "content_scripts": [
     {
       "matches": [
-        "*://znanium.ru/read?id=*",
-        "*://reader.lanbook.com/book/*",
-        "*://e.lanbook.com/book/*",
-        "*://*.urait.ru/viewer/*",
-        "*://urait.ru/viewer/*",
-        "*://*.urait.ru/course-viewer/*",
-        "*://urait.ru/course-viewer/*",
-        "*://biblioclub.ru/index.php?page=book_view*",
-        "*://*.biblioclub.ru/index.php?page=book_view*"
+        "https://znanium.ru/read?id=*",
+        "https://znanium.ru/reader/read?id=*",
+        "https://lanbook.com/reader/book/*",
+        "https://urait.ru/viewer/*",
+        "https://biblioclub.ru/index.php?page=book_view&book_id=*",
+        "https://biblioclub.ru/index.php?page=book_red&book_id=*"
       ],
       "js": [
-        "preload.js",
-        "content.js",
         "libs/pdfkit.standalone.js",
         "libs/blob-stream.min.js",
         "libs/SVG-to-PDFKit.js",
-        "libs/jszip.min.js"
+        "libs/jszip.min.js",
+        "inject.js"
       ],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://znanium.ru/read?id=*",
+        "https://znanium.ru/reader/read?id=*",
+        "https://lanbook.com/reader/book/*",
+        "https://urait.ru/viewer/*",
+        "https://biblioclub.ru/index.php?page=book_view&book_id=*",
+        "https://biblioclub.ru/index.php?page=book_red&book_id=*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
     }
   ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "web_accessible_resources": [
     {
       "resources": [
-        "inject.js",
         "worker.js",
-        "libs/pdfkit.standalone.js",
-        "libs/blob-stream.min.js",
-        "libs/SVG-to-PDFKit.js",
+        "libs/*.js",
         "decryptSVG.wasm",
-        "libs/jszip.min.js"
+        "preload.js"
       ],
       "matches": [
         "*://znanium.ru/*",
-        "*://*.lanbook.com/*",
-        "*://*.urait.ru/*",
+        "*://lanbook.com/*",
         "*://urait.ru/*",
-        "*://biblioclub.ru/*",
-        "*://*.biblioclub.ru/*"
+        "*://biblioclub.ru/*"
       ]
     }
   ]
