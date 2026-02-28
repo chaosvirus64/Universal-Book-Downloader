@@ -1,3 +1,6 @@
+// Core Worker: EPUB & PDF Generation Engine
+// Fix for Biblioclub XML parsing
+
 function cleanText(raw) {
     if (!raw) return "";
     return raw.replace(/<\/?pre[^>]*>/gi, "").trim();
