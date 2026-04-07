@@ -245,7 +245,11 @@ window.onload = async function () {
     }
     const isValidSite =
         (url.hostname.includes('znanium.ru') && (url.pathname.includes('/read') || url.pathname.includes('/reader/read')) && url.searchParams.has('id')) ||
-        (url.hostname.includes('lanbook.com') && (url.pathname.startsWith('/book/') || url.pathname.startsWith('/reader/book/'))) ||
+        (url.hostname.includes('lanbook.com') && 
+            (url.pathname.startsWith('/book/') || 
+             url.pathname.startsWith('/reader/book/') ||
+             url.pathname.startsWith('/vkr/') || 
+             url.pathname.startsWith('/reader/vkr/'))) ||
         (url.hostname.includes('urait.ru') && (url.pathname.includes('/viewer/') || url.pathname.includes('/course-viewer/'))) ||
         (url.hostname.includes('biblioclub.ru') && url.pathname.includes('/index.php') && (url.searchParams.get('page') || '').startsWith('book_view'));
 
@@ -255,6 +259,7 @@ window.onload = async function () {
             Расширение работает только в читалках Znanium, Лань, Юрайт и Biblioclub:
             <br><code>https://znanium.ru/read?id=...</code>
             <br><code>https://reader.lanbook.com/book/...</code>
+            <br><code>https://reader.lanbook.com/vkr/...</code>
             <br><code>https://*.urait.ru/viewer/...</code>
             <br><code>https://biblioclub.ru/index.php?page=book_view...</code>
         </div>`;
