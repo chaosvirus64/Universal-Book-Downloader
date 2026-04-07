@@ -75,6 +75,45 @@ function parseTableOfContents(container) {
     return parseItems(container);
 }
 
+function normalizeTocForRange(items, startPage, endPage) {
+    if (!Array.isArray(items) || !items.length) {
+        return null;
+    }
+
+    let anchorIndex = 0;
+
+    function normalizeEntries(entries) {
+        let normalized = [];
+
+        entries.forEach((item) => {
+            const childItems = normalizeEntries(item.subitems || []);
+            const page = parseInt(item.page, 10);
+            const isPageInRange = !Number.isNaN(page) && page >= startPage && page <= endPage;
+
+            if (!isPageInRange && childItems.length === 0) {
+                return;
+            }
+
+            const normalizedPage = isPageInRange
+                ? page - startPage + 1
+                : childItems[0].page;
+
+            normalized.push({
+                title: item.title,
+                page: normalizedPage,
+                link: item.link,
+                anchorId: `toc-anchor-${anchorIndex++}`,
+                subitems: childItems
+            });
+        });
+
+        return normalized;
+    }
+
+    const normalizedItems = normalizeEntries(items);
+    return normalizedItems.length ? normalizedItems : null;
+}
+
 async function requestPage(pageNumber, bookId, format) {
     return new Promise((resolve, reject) => {
         function messageHandler(event) {
@@ -133,13 +172,14 @@ async function fetchPage(bookId, pageNumber, format) {
 
 async function downloadEPUB(startPage, endPage, bookTitle, bookId, totalPages, worker, processedPages) {
     const { author, toc } = await getBookMetadata(bookId);
+    const normalizedToc = normalizeTocForRange(toc, startPage, endPage);
 
     worker.postMessage({
         action: "initEPUB",
         bookTitle,
         bookId,
         author,
-        toc
+        toc: normalizedToc
     });
 
     let downloadStopped = false;
@@ -620,8 +660,7 @@ async function startBiblioclubDownload(startPage, endPage, format) {
         return;
     }
 
-    let bookTitle = document.title || "Biblioclub_Book";
-    bookTitle = bookTitle.replace(' - Университетская Библиотека Онлайн', '').trim();
+    let bookTitle = getBiblioclubBookTitle();
     const totalPages = endPage - startPage + 1;
     let processedPages = 0;
     let downloadStopped = false;
@@ -867,6 +906,32 @@ function setError(text) {
 function sanitizeFileName(name) {
     if (!name) return "document";
     return name.replace(/[\n\r]+/g, ' ').replace(/[<>:"/\\|?*]+/g, '_').replace(/\s+/g, ' ').trim().substring(0, 120);
+}
+
+function getBiblioclubBookTitle() {
+    const candidates = [
+        document.getElementById('book-name-block')?.textContent,
+        document.querySelector('meta[property="og:title"]')?.content,
+        document.querySelector('meta[name="title"]')?.content,
+        document.querySelector('meta[itemprop="name"]')?.content,
+        document.querySelector('h1')?.textContent,
+        document.querySelector('.book-title')?.textContent,
+        document.querySelector('.book_name')?.textContent,
+        document.title
+    ];
+
+    for (const candidate of candidates) {
+        const cleanedTitle = (candidate || '')
+            .replace(' - Университетская Библиотека Онлайн', '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (cleanedTitle) {
+            return cleanedTitle;
+        }
+    }
+
+    return "Biblioclub_Book";
 }
 
 window.startDownload = startDownload;

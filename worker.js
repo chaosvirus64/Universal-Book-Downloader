@@ -20,9 +20,10 @@ function generateTOCNav(toc) {
         return `<ol>` + items.map(item => {
             let cleanTitle = escapeXML(item.title);
             let pageFilename = `page${item.page - 1}.xhtml`;
+            let target = item.anchorId ? `${pageFilename}#${escapeXML(item.anchorId)}` : pageFilename;
 
             return `
-            <li><a href="${pageFilename}">${cleanTitle}</a>
+            <li><a href="${target}">${cleanTitle}</a>
                 ${item.subitems.length ? buildTOC(item.subitems) : ""}
             </li>`;
         }).join("") + `</ol>`;
@@ -119,10 +120,30 @@ async function convertWebPImagesInSVG(svgText) {
 
 let epubZip, epubFolder, epubPages = [], epubBookId, epubTitle, epubAuthor, epubTOC;
 
+function buildTocAnchorsByPage(items, anchorsByPage) {
+    if (!Array.isArray(items)) {
+        return anchorsByPage;
+    }
+
+    items.forEach((item) => {
+        const pageIndex = parseInt(item.page, 10) - 1;
+        if (!Number.isNaN(pageIndex) && item.anchorId) {
+            if (!anchorsByPage[pageIndex]) {
+                anchorsByPage[pageIndex] = [];
+            }
+            anchorsByPage[pageIndex].push(item.anchorId);
+        }
+        buildTocAnchorsByPage(item.subitems || [], anchorsByPage);
+    });
+
+    return anchorsByPage;
+}
+
 async function finalizeEPUB() {
     try {
         epubZip.file("mimetype", "application/epub+zip", { compression: "STORE" });
         const tocNav = epubTOC ? generateTOCNav(epubTOC) : "";
+        const tocAnchorsByPage = buildTocAnchorsByPage(epubTOC, {});
         const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
         <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="3.0">
             <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -144,6 +165,9 @@ async function finalizeEPUB() {
         if (epubTOC) epubFolder.file("nav.xhtml", tocNav);
 
         epubPages.forEach((text, i) => {
+            const pageAnchors = (tocAnchorsByPage[i] || [])
+                .map(anchorId => `<a id="${escapeXML(anchorId)}"></a>`)
+                .join("\n");
             const pageXHTML = `<?xml version="1.0" encoding="UTF-8"?>
             <html xmlns="http://www.w3.org/1999/xhtml">
                 <head>
@@ -154,6 +178,7 @@ async function finalizeEPUB() {
                     </style>
                 </head>
                 <body>
+                    ${pageAnchors}
                     ${escapeXML(cleanText(text))
                     .split(/\n+/g)
                     .map(line => `<p>${line.trim()}</p>`)
